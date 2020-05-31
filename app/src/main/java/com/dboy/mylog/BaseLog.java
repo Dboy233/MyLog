@@ -2,10 +2,12 @@ package com.dboy.mylog;
 
 import android.util.Log;
 
+import java.util.Locale;
+
 public class BaseLog {
 
 
-    protected static String toString(Object... msg) {
+    protected static String logToString(Object... msg) {
         try {
             StringBuilder sb = new StringBuilder();
 
@@ -17,13 +19,27 @@ public class BaseLog {
                 sb.append(msg[i]);
                 sb.append("\t");
             }
-            return sb.toString();
+            String s = sb.toString();
+            if (s.isEmpty()) {
+                return logMethodLine();
+            }
+            return s;
         } catch (Exception e) {
-            return "Log 参数 异常";
+            return logMethodLine();
         }
     }
 
-    protected static void printParameter(String logPos, int nextParameter, Object... msg) {
+    /**
+     * 逐行打印
+     */
+    protected static void lineLinePrint(String tag, Object... msg) {
+        lineLinePrint(logClassLine(tag), 1, msg);
+    }
+
+    /**
+     * 逐行打印
+     */
+    private static void lineLinePrint(String logPos, int nextParameter, Object... msg) {
         if (msg.length == 0) {
             Log.d(logPos, "");
             return;
@@ -40,25 +56,43 @@ public class BaseLog {
 
         ++nextParameter;
         if (nextParameter < msg.length) {
-            printParameter(logPos, nextParameter, msg);
+            lineLinePrint(logPos, nextParameter, msg);
+        }
+    }
+
+    protected static String logMethodLine() {
+        try {
+            // 占位符模板
+            String template = "Method:(%s)";
+            String index = " ";
+            StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+            if (elements.length < 5) {
+                return index;
+            } else {
+                String methodName = elements[5].getMethodName();
+                index += String.format(Locale.ENGLISH, template, methodName);
+                return index;
+            }
+        } catch (Exception e) {
+            return " ";
         }
     }
 
     /**
      * 获取打印信息所在方法名，行号等信息
      */
-    protected static String getAutoJumpLogInfos(String TAG) {
+    protected static String logClassLine(String tag) {
         try {
-            String tag = "(%s:%d)"; // 占位符
-            String index = TAG;
+            // 占位符模板
+            String template = "(%s:%d)";
+            String index = tag;
             StackTraceElement[] elements = Thread.currentThread().getStackTrace();
             if (elements.length < 5) {
                 return index;
             } else {
                 String className = elements[4].getFileName();
-                String methodName = elements[4].getMethodName();
                 int lineNumber = elements[4].getLineNumber();
-                index   += String.format(tag, className, lineNumber);
+                index += String.format(Locale.ENGLISH, template, className, lineNumber);
 
                 if (index.isEmpty()) {
                     index += "(" + className + ":"
@@ -67,7 +101,7 @@ public class BaseLog {
                 return index;
             }
         } catch (Exception e) {
-            return TAG;
+            return tag;
         }
     }
 
