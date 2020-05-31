@@ -1,8 +1,8 @@
 package com.dboy.mylog;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Arrays;
 
